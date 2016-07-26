@@ -6,7 +6,7 @@ Space flight is no joke, and neither is this lab.  You're going to need to creat
 
 Crew members will also be unable to use their special abilities if they're not assigned to a ship.  For example, a pilot cannot `engageWarpDrive` if he is not in a ship and, therefore, can't make the Kessel Run in less than twelve parsecs. Crew members also should be unable to perform certain actions that their positions are incapable of doing.
 
-To have these two object types be aware of one another we need to have the ship become aware of it's crew members when it's created. This will also require you to make sure a crew member becomes aware of their ship when they are added to it.
+We've created a constant `Store` to store all crew members and spaceships. A spaceship has many crew members and a crew member belongs to a spaceship. Build out the associations and pass the tests. Hint ... the solution branch will not help you. ::evil cackle::
 
 - To run tests on the command line run
   -  `learn`

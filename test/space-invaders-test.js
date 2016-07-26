@@ -11,25 +11,47 @@ const babelSpaceship = babel.transformFileSync(path.resolve(__dirname, '..', 'sp
 const babelCrewMember = babel.transformFileSync(path.resolve(__dirname, '..', 'crewMember.js'), {
   presets: ['es2015']
 })
+const babelStore = babel.transformFileSync(path.resolve(__dirname, '..', 'store.js'), {
+  presets: ['es2015']
+})
+
+
 
 describe('space invaders', () => {
 
   jsdom({
-    src: babelSpaceship.code + babelCrewMember.code
+    src: babelSpaceship.code + babelCrewMember.code + babelStore.code
   })
 
   describe('CrewMember', function() {
     let tristan, jon, katie
     beforeEach(function() {
-      tristan = new CrewMember('Pilot')
-      jon = new CrewMember('Defender')
-      katie = new CrewMember('Gunner')
+      tristan = new CrewMember({id: 1, position: 'Pilot'})
+      jon = new CrewMember({id: 2, position: 'Defender'})
+      katie = new CrewMember({id: 3, position: 'Gunner'})
     })
 
     it('should know their position', function() {
       expect(tristan.position).toBe('Pilot')
       expect(jon.position).toBe('Defender')
       expect(katie.position).toBe('Gunner')
+    })
+
+    it('should add crewmember to all crewmember data', function() {
+      expect(Store.data.crewMembers.includes(tristan))
+    })
+
+    it('should know their id', function() {
+      expect(tristan.id).toBe(1)
+      expect(jon.id).toBe(2)
+      expect(katie.id).toBe(3)
+    })
+
+    it('should not be assigned to a ship', function() {
+      expect(tristan.ship_id).toBe(undefined)
+      expect(jon.ship_id).toBe(undefined)
+      expect(katie.ship_id).toBe(undefined)
+
     })
 
     it('should should return "Looking for a Rig" if they aren\'t assigned to a ship', function() {
@@ -46,7 +68,10 @@ describe('space invaders', () => {
   describe('Spaceship', function() {
     var spaceship
     beforeEach(function() {
-      spaceship = new Spaceship('The Krestel', [], 5, 4)
+      Store.data.crewMembers = []
+      Store.data.spaceships = []
+      spaceship = new Spaceship({id: 2, name: 'The Krestel', phasers: 5, shields: 4})
+      tristan = new CrewMember({id: 1, position: 'Pilot'})
     })
 
     it('should know its own name', function() {
@@ -73,30 +98,44 @@ describe('space invaders', () => {
       expect(spaceship.docked).toBe(true)
     })
 
+    it('should not be docked if it has crew', function() {
+      tristan.assignShip(spaceship)
+      expect(spaceship.docked).toBe(false)
+    })
+
     it('should have its `phasers` charge set to "uncharged" by default', function() {
       expect(spaceship.phasersCharge).toBe('uncharged')
+    })
+
+    it('should add spaceship to all shapship data', function() {
+      expect(Store.data.spaceships.includes(spaceship))
     })
   })
 
   describe('Ship with a crew', function() {
     var tristan, jon, katie, spaceship
     beforeEach(function() {
-      tristan = new CrewMember('Pilot')
-      jon = new CrewMember('Defender')
-      katie = new CrewMember('Gunner')
-      spaceship = new Spaceship('The Krestel', [tristan, jon, katie], 5, 4)
+      Store.data.crewMembers = []
+      Store.data.spaceships = []
+      spaceship = new Spaceship({id: 2, name: 'The Krestel', phasers: 5, shields: 4})
+      tristan = new CrewMember({id: 1, position: 'Pilot'})
+      jon = new CrewMember({id: 2, position: 'Defender'})
+      katie = new CrewMember({id: 3, position: 'Gunner'})
+      tristan.assignShip(spaceship)
+      katie.assignShip(spaceship)
+      jon.assignShip(spaceship)
     })
 
-    it('`docked` should return false for ships with a crew', function() {
-      expect(spaceship.docked).toBe(false)
+    it('should assign a crew member', function() {
+      expect(tristan.spaceshipId).toBe(2)
     })
 
-    it('a crew member should return their ship when `currentShip` is called on them', function() {
-      expect(tristan.currentShip).toBe(spaceship)
+    it('a crew member should know his or her ship', function() {
       expect(tristan.currentShip.name).toBe('The Krestel')
     })
 
     it('should charge its phasers when a gunner calls `chargePhasers`', function() {
+      // console.log(tristian.currentShip)
       tristan.chargePhasers()
       expect(spaceship.phasersCharge).toBe('uncharged')
       katie.chargePhasers()
